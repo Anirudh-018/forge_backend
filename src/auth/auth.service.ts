@@ -1,26 +1,90 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { SignUpModel } from './auth.model';
+import { Model } from 'mongoose';
+import { Auth } from 'typeorm';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(@InjectModel('newuser') private signUpModel: Model<SignUpModel>) {}
+
+  async insertUser(createUserDto: CreateAuthDto): Promise<Auth> {
+    const { email, username } = createUserDto;
+    const existingUser = await this.signUpModel.findOne({
+      where: [{ email }, { username }],
+    });
+    if (existingUser) {
+      throw new ConflictException('User with the same email or username already exists');
+    }
+    const newUser = this.signUpModel.create(createUserDto); 
+  
+    return await newUser;
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async findAll() {
+    console.log('Fetching all users...');
+    const users = await this.signUpModel.find().exec();
+    console.log('Users:', users);
+    return users.map(user => ({
+      id: user._id,
+      email: user.email,
+      username: user.username,
+      password: user.password,
+      confirmpassword: user.confirmpassword,
+    }));
+  }
+  
+  async getUserByUsername(username: string) {
+    const user = await this.findUserByUsername(username);
+    if (!user) {
+      throw new NotFoundException(`User with username ${username} not found.`);
+    }
+    return {
+      name:user.username
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  async updateUserByUsername(username: string, updateAuthDto: UpdateAuthDto) {
+    const { password, newpassword } = updateAuthDto;
+    const user = await this.findUserByUsername(username);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (password && newpassword) {
+      if (user.password !== password) {
+        throw new BadRequestException('Incorrect password');
+      }
+      user.password = newpassword;
+      return this.signUpModel.findOneAndUpdate({ username }, user, { new: true, lean: true });
+    } else {
+      throw new BadRequestException('Both current password and new password are required');
+    }
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
+  async deleteUser(username: string, password: string) {
+    const user = await this.findUserByUsername(username);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.password !== password) {
+      throw new BadRequestException('Incorrect password');
+    }
+    const result = await this.signUpModel.deleteOne({ username }).exec();
+    if (result.deletedCount === 0) {
+      throw new NotFoundException('User not found');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  private async findUserByUsername(username: string): Promise<SignUpModel> {
+    let user;
+    try {
+      user = await this.signUpModel.findOne({ username }).exec();
+    } catch (error) {
+      throw new NotFoundException('Could not find user.');
+    }
+    return user;
   }
 }

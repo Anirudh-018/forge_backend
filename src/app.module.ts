@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { GenerateModule } from './generate/generate.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { ProfileModule } from './profile/profile.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,7 +19,7 @@ import { MulterModule } from '@nestjs/platform-express';
     MongooseModule.forRoot(process.env.DB_URL),
     MongooseModule.forFeature([]),
     AuthModule,
-    GenerateModule
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],
