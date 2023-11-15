@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fetch Image Example</title>
+  </head>
+  <body>
+    <h1>Image from API</h1>
+    <div id="image-container">
+      <img id="fetched-image" alt="Fetched Image" />
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        const url = 'http://localhost:3000/generate/getFile/logo.jpg';
+
+        // Make an HTTP GET request
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            // Extract the 'file_url' field from the JSON response
+            const fileUrl = data.file_url;
+
+            // Log the extracted file_url value
+            console.log('File URL:', fileUrl);
+            const fetchedImage = document.getElementById('fetched-image');
+            fetchedImage.src = fileUrl;
+          })
+          .catch((error) => {
+            console.error('Error fetching data:', error);
+          });
+      });
+    </script>
+  </body>
+</html>
