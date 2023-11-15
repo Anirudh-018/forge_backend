@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { GenerateModule } from './generate/generate.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { GenerateModule } from './generate/generate.module';
     MongooseModule.forRoot(process.env.DB_URL),
     MongooseModule.forFeature([]),
     AuthModule,
-    GenerateModule
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],
