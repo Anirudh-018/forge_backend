@@ -6,10 +6,5 @@ import { MongooseModule } from '@nestjs/mongoose';
 @Module({
   controllers: [GenerateController],
   providers: [GenerateService],
-  imports: [
-    MulterModule.register({
-      dest: './uploads', // Set the destination folder for temporary storage
-    }),
-  ],
 })
 export class GenerateModule {}

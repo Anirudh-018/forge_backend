@@ -19,6 +19,7 @@ import { ProfileModule } from './profile/profile.module';
     MongooseModule.forRoot(process.env.DB_URL),
     MongooseModule.forFeature([]),
     AuthModule,
+    GenerateModule,
     ProfileModule,
   ],
   controllers: [AppController],
