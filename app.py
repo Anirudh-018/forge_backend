@@ -17,7 +17,7 @@ model_id_or_path = "runwayml/stable-diffusion-v1-5"
 pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16)
 pipe = pipe.to(device)
 print('hello')
-cred = credentials.Certificate('forge-backend-8b8e6-firebase-adminsdk-t1wlt-44eb6b3dee.json')
+cred = credentials.Certificate('src/forge-backend-8b8e6-firebase-adminsdk-t1wlt-44eb6b3dee.json')
 firebase_admin.initialize_app(cred, {
     'storageBucket': 'forge-backend-8b8e6.appspot.com'
 })
