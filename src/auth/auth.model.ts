@@ -17,6 +17,6 @@ export const SignUpSchema = new Schema<SignUpModel>(
   { timestamps: true }
 );
 
-SignUpSchema.index({ email: 1, username: 1 }, { unique: true });
+// SignUpSchema.index({ email: 1, username: 1 }, { unique: true });
 
 export const SignUpModel = mongoose.model<SignUpModel>('newuser', SignUpSchema);
