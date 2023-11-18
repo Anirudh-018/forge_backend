@@ -1,41 +1,60 @@
-from flask import Flask, request, send_file
 import firebase_admin
 from firebase_admin import credentials, storage
 from io import BytesIO
+# Initialize Firebase Admin SDK (replace 'path/to/serviceAccountKey.json' with your credentials file)
+from flask import Flask, send_file,request
+from transformers import pipeline
 import requests
-import jsonify
-import os
+from PIL import Image
+from io import BytesIO
+import torch
+from diffusers import StableDiffusionImg2ImgPipeline
 app = Flask(__name__)
 
-# Initialize Firebase (replace 'path/to/serviceAccountKey.json' with your credentials file)
+# Initialize model on CPU
+device = "cuda"  # Change to "cuda" if GPU available
+model_id_or_path = "runwayml/stable-diffusion-v1-5"
+pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16)
+pipe = pipe.to(device)
+print('hello')
 cred = credentials.Certificate('src/forge-backend-8b8e6-firebase-adminsdk-t1wlt-44eb6b3dee.json')
 firebase_admin.initialize_app(cred, {
-    'storageBucket': 'gs://forge-backend-8b8e6.appspot.com'
+    'storageBucket': 'forge-backend-8b8e6.appspot.com'
 })
 bucket = storage.bucket()
 
-# Endpoint for getting an image from Firebase Storage and returning it
-@app.route('/get_image', methods=['POST'])
-def get_image_from_url():
+def upload_to_firebase(local_file_path, destination_blob_name):
     try:
-        data = request.get_json()
-        image_url = data.get('url')
+        # Upload file to Firebase Storage
+        blob = bucket.blob(destination_blob_name)
+        blob.upload_from_filename(local_file_path)
 
-        # Fetch the image from the provided URL
-        response = requests.get(image_url)
+        return f"File {local_file_path} uploaded to Firebase Storage as {destination_blob_name}"
 
-        if response.status_code != 200:
-            return 'Failed to fetch image from provided URL', 400
+    except Exception as e:
+        print(f"Error: {e}")
+@app.route('/')
+def hello():
+    return 'Hello, Flask!'
+@app.route('/generate_images', methods=['POST'])
+def generate_images():
+    try:
+        req=request.json
+        userId=req['userId']
+        if req['image']:
+            url=req['image']
+        response = requests.get(url)
+        init_image = Image.open(BytesIO(response.content)).convert("RGB")
+        init_image = init_image.resize((768, 512))
 
-        # Convert the image data to a bytes buffer
-        image_data = BytesIO(response.content)
-        image_data.seek(0)
-
-        # Return the image data as a response
-        return send_file(image_data, mimetype='image/jpeg')
-
+        # prompt = "Breathtaking fantasy landscape depicting a mystical setting with a majestic white dragon soaring gracefully in the background. The scene is rendered in exquisite detail, showcasing vibrant colors, stunning lighting, and fantastical elements. The artwork evokes a sense of wonder and awe, creating a truly immersive experience. This masterpiece digital painting is created by a talented artist like Craig Mullins and Peter Mohrbacher, known for their incredible skills in capturing the essence of fantasy worlds. The resolution of this artwork is set at a stunning 4k, ensuring every minute detail is brought to life"
+        prompt=req['prompt']
+        images = pipe(prompt=prompt, image=init_image, strength=0.75, guidance_scale=7.5).images
+        images[0].save("generated_image.png")
+        return upload_to_firebase('generated_image.png',f"images/{userId}/generated_image.png");
+    
     except Exception as e:
         return str(e), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)

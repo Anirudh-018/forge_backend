@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -8,27 +8,32 @@ export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @Post()
-  create(@Body() createProfileDto: CreateProfileDto) {
-    return this.profileService.create(createProfileDto);
+  userDetails(@Body() createProfileDto: CreateProfileDto) {
+    return this.profileService.userDetails(createProfileDto);
   }
 
+  @Patch(':userid')
+  async updateUserByUserId(@Param('userid') userid: string, @Body() updateProfileDto: UpdateProfileDto) {
+    try {
+      const updatedProfile = await this.profileService.updateUserByUserId(userid, updateProfileDto);
+      return {
+        firstname: updatedProfile.firstname,
+        lastname: updatedProfile.lastname,
+        username: updatedProfile.username,
+        email: updatedProfile.email,
+        phonenumber: updatedProfile.phonenumber,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      } else {
+        throw error;
+      }
+    }
+  }
   @Get()
   findAll() {
+    console.log('Received request to fetch all users...');
     return this.profileService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.profileService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.profileService.update(+id, updateProfileDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.profileService.remove(+id);
   }
 }
