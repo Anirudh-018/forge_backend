@@ -1,3 +1,5 @@
+// auth.service.ts
+
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
@@ -10,16 +12,15 @@ import { Auth } from 'typeorm';
 export class AuthService {
   constructor(@InjectModel('newuser') private signUpModel: Model<SignUpModel>) {}
 
-  async insertUser(createUserDto: CreateAuthDto): Promise<Auth> {
-    const { email, username } = createUserDto;
-    const existingUser = await this.signUpModel.findOne({
-      where: [{ email }, { username }],
-    });
+  async insertUser(createAuthDto: CreateAuthDto): Promise<Auth> {
+    const { username, email } = createAuthDto;
+    const existingUser = await this.signUpModel.findOne({ email }) || await this.signUpModel.findOne({ username });
     if (existingUser) {
       throw new ConflictException('User with the same email or username already exists');
     }
-    const newUser = this.signUpModel.create(createUserDto); 
-  
+    
+    // Omit the 'userid' field in createAuthDto to let MongoDB assign it
+    const newUser = this.signUpModel.create(createAuthDto);
     return await newUser;
   }
 
@@ -42,7 +43,7 @@ export class AuthService {
       throw new NotFoundException(`User with username ${username} not found.`);
     }
     return {
-      name:user.username
+      name: user.username
     };
   }
 
@@ -58,7 +59,7 @@ export class AuthService {
         throw new BadRequestException('Incorrect password');
       }
       user.password = newpassword;
-      return this.signUpModel.findOneAndUpdate({ username }, user, { new: true, lean: true });
+      return this.signUpModel.findOneAndUpdate({ username }, user, { new: true, lean: true, omitUndefined: true });
     } else {
       throw new BadRequestException('Both current password and new password are required');
     }

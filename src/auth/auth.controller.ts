@@ -26,13 +26,6 @@ findAll() {
   }
 
 
-  @Post('/uploadTest')
-  @UseInterceptors(FileInterceptor('file'))
-  async upload(@UploadedFile() file: Express.Multer.File) {
-    console.log(file.buffer);
-    return 'file API';
-  }
-  
   @Patch(':username')
   async updatePassword(@Param('username') username: string, @Body() updateAuthDto: UpdateAuthDto) {
     try {
