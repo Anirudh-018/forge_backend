@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -11,6 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GenerateService } from './generate.service';
 import { Request, Response } from 'express';
+import { GenerateDto } from './dto/generateDto';
 
 @Controller('generate')
 export class GenerateController {
@@ -31,8 +34,18 @@ export class GenerateController {
 
     return {"file_url":await this.generateService.getFile(fileName)};
   }
-  @Get('getAll/:folderName')
-  async getAll(@Param('folderName') folderName: string) {
-    return await this.generateService.getAll(folderName);
+  @Get('getAll/:userName')
+  async getAll(@Param('userName') userName: string) {
+    return await this.generateService.getAll(userName);
+  }
+  @Post('/addToGallery')
+  async addToGallery(@Query('username') username:string,@Query('fileName') fileName:string){
+    return await this.generateService.addToGallery(username,fileName);
+  }
+  @Post('/generate')
+  @UseInterceptors(FileInterceptor('file'))
+  async generateImages(@Body() generateDto:GenerateDto,@UploadedFile() file: Express.Multer.File){
+    console.log('req gen');
+    return await this.generateService.generate(file.buffer,generateDto.userName,generateDto.prompt,file.originalname);
   }
 }

@@ -1,7 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, storage
 from io import BytesIO
-# Initialize Firebase Admin SDK (replace 'path/to/serviceAccountKey.json' with your credentials file)
+import os
 from flask import Flask, send_file,request
 from transformers import pipeline
 import requests
@@ -29,7 +29,7 @@ def upload_to_firebase(local_file_path, destination_blob_name):
         blob = bucket.blob(destination_blob_name)
         blob.upload_from_filename(local_file_path)
 
-        return f"File {local_file_path} uploaded to Firebase Storage as {destination_blob_name}"
+        print(f"File {local_file_path} uploaded to Firebase Storage as {destination_blob_name}")
 
     except Exception as e:
         print(f"Error: {e}")
@@ -49,10 +49,13 @@ def generate_images():
 
         # prompt = "Breathtaking fantasy landscape depicting a mystical setting with a majestic white dragon soaring gracefully in the background. The scene is rendered in exquisite detail, showcasing vibrant colors, stunning lighting, and fantastical elements. The artwork evokes a sense of wonder and awe, creating a truly immersive experience. This masterpiece digital painting is created by a talented artist like Craig Mullins and Peter Mohrbacher, known for their incredible skills in capturing the essence of fantasy worlds. The resolution of this artwork is set at a stunning 4k, ensuring every minute detail is brought to life"
         prompt=req['prompt']
-        images = pipe(prompt=prompt, image=init_image, strength=0.75, guidance_scale=7.5).images
-        images[0].save("generated_image.png")
-        return upload_to_firebase('generated_image.png',f"images/{userId}/generated_image.png");
-    
+        if not os.path.exists(f'{userId}'):
+            os.makedirs(f'{userId}')
+        for i in range(5):
+            images = pipe(prompt=prompt, image=init_image, strength=0.75, guidance_scale=7.5).images
+            images[0].save(f"{userId}/generated_image_{i}.png")
+            upload_to_firebase(f"{userId}/generated_image_{i}.png",f"images/{userId}/generated_image{i}.png");
+        return "images uploaded"
     except Exception as e:
         return str(e), 500
 

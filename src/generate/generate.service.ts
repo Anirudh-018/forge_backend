@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Body, Injectable } from '@nestjs/common';
 import { Response } from 'express';
 import * as admin from 'firebase-admin';
 import { Stream } from 'stream';
 import * as ser from '../forge-backend-8b8e6-firebase-adminsdk-t1wlt-44eb6b3dee.json'
+import { GenerateDto } from './dto/generateDto';
+import axios from 'axios';
 @Injectable()
 export class GenerateService {
   private readonly storage: admin.storage.Storage;
@@ -56,21 +58,45 @@ export class GenerateService {
       throw new Error(`Error listing file ${fileName}: ${error.message}`);
     }
   }
-  async getAll(folderName: string){
-    const prefix = folderName+"/";
-    const bucket = this.storage.bucket('gs://forge-backend-8b8e6.appspot.com');
+  async getAll(userName: string){
+    const prefix = "images/"+userName+"/";
     try {
-      const [files] = await bucket.getFiles({ prefix });
-      var filesMapping = {}
+      var links=[];
+      const [files] = await this.storage.bucket().getFiles({ prefix });
       files.forEach(file => {
         file.makePublic();
         // const [metadata]=await file.getMetadata()
         console.log(file.name)
-        filesMapping[file.name]=file.metadata.mediaLink
+        links.push(file.metadata.mediaLink)
       });
-      return filesMapping;
+      return links;
     } catch (error) {
-      throw new Error(`Error listing files in ${folderName}: ${error.message}`);
+      throw new Error(`Error listing files in ${userName}: ${error.message}`);
+    }
+  }
+  async addToGallery(username: string, fileName:string){
+    const sourceFile = this.storage.bucket().file(`images/${username}/${fileName}`);
+    const destinationFile = this.storage.bucket().file(`images/${username}/gallery/${fileName}`)
+    await sourceFile.move(destinationFile);
+    return 'File moved successfully to gallery';
+  }
+
+  async generate(image:Buffer,userName:string,prompt:string,originalName:string){
+    try {
+      await this.uploadToFirebase(image,originalName);
+      const url=await this.getFile(originalName);
+      const data={
+        image:url,
+        userId:userName,
+        prompt:prompt
+      }
+      const response = await axios.post('http://127.0.0.1:5000/generate_images',data );
+      console.log(response.data);
+      return response.data; // Return response data
+    } catch (error) {
+      // Handle errors
+      console.error('Error posting to generate_images:', error);
+      throw error;
     }
   }
 }
