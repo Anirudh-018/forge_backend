@@ -1,18 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, BadRequestException, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, BadRequestException, UseInterceptors, UploadedFile, Res, Query, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { Response } from 'express';
+import { Response,Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
+  @Post('signup')
   async register(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.insertUser(createAuthDto);
   }
+
+   @Post('login')
+   async login(@Query('username') username: string,@Query('password') password:string,@Res() res:Response) {
+    res.status(200).send(await this.authService.checkUser(username,password));
+   }
 
   @Get()
 findAll() {

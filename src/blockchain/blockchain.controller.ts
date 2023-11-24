@@ -6,14 +6,14 @@ import { BlockchainService } from './blockchain.service';
 export class BlockchainController {
   constructor(private readonly blockchainService: BlockchainService) {}
 
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('image'))
-  async uploadImageToIpfs(@UploadedFile() file: Express.Multer.File): Promise<string> {
-    if (!file) {
-      throw new Error('Please upload an image file');
-    }
+  // @Post('upload')
+  // @UseInterceptors(FileInterceptor('image'))
+  // async uploadImageToIpfs(@UploadedFile() file: Express.Multer.File): Promise<string> {
+  //   if (!file) {
+  //     throw new Error('Please upload an image file');
+  //   }
 
-    const imageUrl = await this.blockchainService.addImageToIpfs(file.buffer);
-    return imageUrl;
-  }
+  //   const imageUrl = await this.blockchainService.addImageToIpfs(file.buffer);
+  //   return imageUrl;
+  // }
 }
