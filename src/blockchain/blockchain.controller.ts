@@ -1,19 +1,19 @@
-import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BlockchainService } from './blockchain.service';
-
+import axios from 'axios';
+const fs = require('fs')
 @Controller('blockchain')
 export class BlockchainController {
   constructor(private readonly blockchainService: BlockchainService) {}
-
-  // @Post('upload')
-  // @UseInterceptors(FileInterceptor('image'))
-  // async uploadImageToIpfs(@UploadedFile() file: Express.Multer.File): Promise<string> {
-  //   if (!file) {
-  //     throw new Error('Please upload an image file');
-  //   }
-
-  //   const imageUrl = await this.blockchainService.addImageToIpfs(file.buffer);
-  //   return imageUrl;
-  // }
+  @Post('upload')
+  async uploadFile(@Query('name') name:string,@Query('username') username:string){
+    const result=await this.blockchainService.pinFileToIPFS(username,name);
+    return result;
+    // return pinata.uploadToIPFS(,file.buffer,metadata)
+  }
+  @Get('get')
+  async getDocument() {
+    return this.blockchainService.getDocument();
+  }
 }

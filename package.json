@@ -29,6 +29,7 @@
     "axios": "^1.6.2",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
+    "ethers": "^6.8.1",
     "firebase-admin": "^11.11.0",
     "ipfs-http-client": "^60.0.1",
     "mongoose": "^8.0.0",
