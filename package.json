@@ -20,19 +20,23 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
+    "@nestjs/common": "^10.2.9",
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^10.0.2",
-    "@nestjs/platform-express": "^10.2.8",
-    "axios": "^1.6.1",
+    "@nestjs/platform-express": "^10.2.9",
+    "axios": "^1.6.2",
+    "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
     "firebase-admin": "^11.11.0",
+    "ipfs-http-client": "^60.0.1",
     "mongoose": "^8.0.0",
     "multer": "^1.4.5-lts.1",
+    "process": "^0.11.10",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "typeorm": "^0.3.17"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

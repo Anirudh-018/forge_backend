@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { GenerateModule } from './generate/generate.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { ProfileModule } from './profile/profile.module';
+import { BlockchainModule } from './blockchain/blockchain.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,6 +22,7 @@ import { ProfileModule } from './profile/profile.module';
     AuthModule,
     GenerateModule,
     ProfileModule,
+    BlockchainModule,
   ],
   controllers: [AppController],
   providers: [AppService],

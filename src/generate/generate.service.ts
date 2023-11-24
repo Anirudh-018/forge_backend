@@ -59,7 +59,7 @@ export class GenerateService {
     }
   }
   async getAll(userName: string){
-    const prefix = "images/"+userName+"/";
+    const prefix = "images/"+userName+"/generatedImages";
     try {
       var links=[];
       const [files] = await this.storage.bucket().getFiles({ prefix });
@@ -69,13 +69,29 @@ export class GenerateService {
         console.log(file.name)
         links.push(file.metadata.mediaLink)
       });
-      return links;
+      return links.slice(1,links.length);
+    } catch (error) {
+      throw new Error(`Error listing files in ${userName}: ${error.message}`);
+    }
+  }
+  async getAllGallery(userName: string){
+    const prefix = "images/"+userName+"/gallery";
+    try {
+      var links=[];
+      const [files] = await this.storage.bucket().getFiles({ prefix });
+      files.forEach(file => {
+        file.makePublic();
+        // const [metadata]=await file.getMetadata()
+        console.log(file.name)
+        links.push(file.metadata.mediaLink)
+      });
+      return links.slice(1,links.length);
     } catch (error) {
       throw new Error(`Error listing files in ${userName}: ${error.message}`);
     }
   }
   async addToGallery(username: string, fileName:string){
-    const sourceFile = this.storage.bucket().file(`images/${username}/${fileName}`);
+    const sourceFile = this.storage.bucket().file(`images/${username}/generatedImages/${fileName}`);
     const destinationFile = this.storage.bucket().file(`images/${username}/gallery/${fileName}`)
     await sourceFile.move(destinationFile);
     return 'File moved successfully to gallery';

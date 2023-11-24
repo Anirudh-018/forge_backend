@@ -38,6 +38,10 @@ export class GenerateController {
   async getAll(@Param('userName') userName: string) {
     return await this.generateService.getAll(userName);
   }
+  @Get('getAllGallery/:userName')
+  async getAllGallery(@Param('userName') userName: string) {
+    return await this.generateService.getAllGallery(userName);
+  }
   @Post('/addToGallery')
   async addToGallery(@Query('username') username:string,@Query('fileName') fileName:string){
     return await this.generateService.addToGallery(username,fileName);

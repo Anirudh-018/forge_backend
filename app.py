@@ -54,7 +54,7 @@ def generate_images():
         for i in range(5):
             images = pipe(prompt=prompt, image=init_image, strength=0.75, guidance_scale=7.5).images
             images[0].save(f"{userId}/generated_image_{i}.png")
-            upload_to_firebase(f"{userId}/generated_image_{i}.png",f"images/{userId}/generated_image{i}.png");
+            upload_to_firebase(f"{userId}/generated_image_{i}.png",f"images/{userId}/generatedImages/generated_image{i}.png");
         return "images uploaded"
     except Exception as e:
         return str(e), 500
